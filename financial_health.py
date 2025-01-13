@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
+
 @app.route('/', methods=['GET', 'POST'])
 def financial_health():
     if request.method == 'POST':
@@ -26,9 +27,21 @@ def financial_health():
         # Calculate metrics
         monthly_savings = monthly_income * (savings_percentage / 100)
         monthly_expenditure = monthly_income - monthly_savings
-        loan_to_income_ratio = (monthly_loan_payment / monthly_income) * 100 if monthly_loan_payment > 0 else 0
-        loan_to_savings_ratio = outstanding_loan / monthly_savings if monthly_savings > 0 else 0
-        variance_percentage = (monthly_variance / monthly_expenditure) * 100 if monthly_expenditure > 0 else 0
+        # Calculate loan-to-income ratio
+        if monthly_loan_payment > 0:
+            loan_to_income_ratio = (monthly_loan_payment / monthly_income) * 100
+        else:
+            loan_to_income_ratio = 0
+        # Calculate loan-to-savings ratio
+        if monthly_savings > 0:
+            loan_to_savings_ratio = outstanding_loan / monthly_savings
+        else:
+            loan_to_savings_ratio = 0
+        # Calculate variance percentage
+        if monthly_expenditure > 0:
+            variance_percentage = (monthly_variance / monthly_expenditure) * 100
+        else:
+            variance_percentage = 0
 
         # Calculate score (0-10)
         score = 10  # Start with perfect score and deduct based on factors
@@ -40,7 +53,7 @@ def financial_health():
         # Investment check
         if funds_invested == 'no':
             score -= 1.5
-        
+
         # Loan burden check
         if loan_to_income_ratio > 40:
             score -= 2
@@ -72,19 +85,10 @@ def financial_health():
         if monthly_loan_payment > 0:
             analysis['monthly_loan_payment'] = monthly_loan_payment
 
-        return render_template('result_wo_chart.html', analysis=analysis)
+        return render_template('result-nochart.html', analysis=analysis)
 
     return render_template('form.html')
 
-@app.route('/login')
-def wlcomePage():
-    abc = dict()
-    abc['a'] = 'apple'
-    if abc.get('c'):
-        print(abc['c'])
-    else:
-        print('not found')
-    return "<html><h1>You are at my page</h1></html>"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
